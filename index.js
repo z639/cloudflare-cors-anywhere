@@ -72,7 +72,7 @@ addEventListener("fetch", async event => {
             }
 
             if (originUrl.search.startsWith("?")) {
-                const filteredHeaders = {};
+                let filteredHeaders = {};
                 for (const [key, value] of event.request.headers.entries()) {
                     if (
                         (key.match("^origin") === null) &&
@@ -91,11 +91,12 @@ addEventListener("fetch", async event => {
 
                 const newRequest = new Request(event.request, {
                     redirect: "follow",
+                    // @ts-ignore
                     headers: filteredHeaders
                 });
 
                 const response = await fetch(targetUrl, newRequest);
-                const responseHeaders = new Headers(response.headers);
+                let responseHeaders = new Headers(response.headers);
                 const exposedHeaders = [];
                 const allResponseHeaders = {};
                 for (const [key, value] of response.headers.entries()) {
@@ -118,24 +119,17 @@ addEventListener("fetch", async event => {
                 return new Response(responseBody, responseInit);
 
             } else {
-                const responseHeaders = new Headers();
+                let responseHeaders = new Headers();
                 responseHeaders = setupCORSHeaders(responseHeaders);
 
-                let country = false;
-                let colo = false;
-                if (typeof event.request.cf !== "undefined") {
-                    country = event.request.cf.country || false;
-                    colo = event.request.cf.colo || false;
-                }
+                
+                //if (typeof event.request.cf !== "undefined") {
+                    let country = event.request.cf.country || false;
+                    let colo = event.request.cf.colo || false;
+                //}
 
                 return new Response(
                     "CLOUDFLARE-CORS-ANYWHERE\n\n" +
-                    "Source:\nhttps://github.com/Zibri/cloudflare-cors-anywhere\n\n" +
-                    "Usage:\n" +
-                    originUrl.origin + "/?uri\n\n" +
-                    "Donate:\nhttps://paypal.me/Zibri/5\n\n" +
-                    "Limits: 100,000 requests/day\n" +
-                    "          1,000 requests/10 minutes\n\n" +
                     (originHeader !== null ? "Origin: " + originHeader + "\n" : "") +
                     "IP: " + connectingIp + "\n" +
                     (country ? "Country: " + country + "\n" : "") +
@@ -150,10 +144,7 @@ addEventListener("fetch", async event => {
             }
         } else {
             return new Response(
-                "Create your own CORS proxy</br>\n" +
-                "<a href='https://github.com/Zibri/cloudflare-cors-anywhere'>https://github.com/Zibri/cloudflare-cors-anywhere</a></br>\n" +
-                "\nDonate</br>\n" +
-                "<a href='https://paypal.me/Zibri/5'>https://paypal.me/Zibri/5</a>\n",
+                "",
                 {
                     status: 403,
                     statusText: 'Forbidden',
